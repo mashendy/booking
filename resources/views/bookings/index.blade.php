@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Booking Ruangan</title>
+    <title>Booking Saya - Sistem Booking Ruangan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous">
     <style>
@@ -109,27 +109,25 @@
         .status-pending {
             background-color: #fff3cd;
             color: #856404;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-weight: 500;
         }
         
         .status-disetujui {
             background-color: #d4edda;
             color: #155724;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-weight: 500;
         }
         
         .status-ditolak {
             background-color: #f8d7da;
             color: #721c24;
-        }
-        
-        .form-select {
             border-radius: 20px;
-            padding: 5px 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+            padding: 6px 12px;
+            font-weight: 500;
         }
         
         .btn-action {
@@ -203,7 +201,7 @@
         
         .room-capacity {
             display: flex;
-            align-items: center;
+            align-items-center;
             margin-bottom: 15px;
         }
         
@@ -222,6 +220,27 @@
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .view-only-badge {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
         }
         
         @media (max-width: 768px) {
@@ -252,12 +271,18 @@
     <div class="header-section">
         <div class="row align-items-center">
             <div class="col-md-6">
-                <h1 class="page-title"><i class="fas fa-calendar-alt"></i> Sistem Booking Ruangan</h1>
+                <h1 class="page-title"><i class="fas fa-calendar-alt"></i> Booking Saya</h1>
+                <p class="mb-0 mt-2">Lihat status booking ruangan yang telah Anda ajukan</p>
             </div>
             <div class="col-md-6 text-md-end header-actions">
                 <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#roomsModal">
-                    <i class="fas fa-door-open me-2"></i> Lihat Daftar Ruangan
+                    <i class="fas fa-door-open me-2"></i> Booking Ruangan Baru
                 </button>
+                 <form action="{{ route('logout') }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-danger">Logout</button>
+</form>
+
             </div>
         </div>
     </div>
@@ -273,7 +298,10 @@
     <!-- Tabel Booking -->
     <div class="card shadow-sm">
         <div class="card-header">
-            <i class="fas fa-list me-2"></i> Daftar Pemesanan Ruangan
+            <i class="fas fa-list me-2"></i> Daftar Booking Saya
+            <span class="view-only-badge ms-2">
+                <i class="fas fa-eye me-1"></i> Hanya Lihat
+            </span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -281,14 +309,13 @@
                     <thead class="table-primary">
                         <tr>
                             <th>No</th>
-                            <th>Nama Pemesan</th>
-                            <th>Email</th>
                             <th>Ruangan</th>
                             <th>Tanggal</th>
-                            <th>Jam</th>
+                            <th>Waktu</th>
                             <th>Keterangan</th>
                             <th>Status</th>
-                            <th>Aksi</th>
+                            <th>Update Terakhir</th>
+                            <th class="text-center">Detail</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -296,17 +323,8 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
-                                            {{ strtoupper(substr($booking->nama_pemesan, 0, 1)) }}
-                                        </div>
-                                        <div>{{ $booking->nama_pemesan }}</div>
-                                    </div>
-                                </td>
-                                <td>{{ $booking->email }}</td>
-                                <td>
                                     <span class="badge bg-secondary badge-status">
-                                        <i class="fas fa-door-open me-1"></i> {{ $booking->room->nama }}
+                                        <i class="fas fa-door-open me-1"></i> {{ $booking->room->nama_ruangan ?? 'N/A' }}
                                     </span>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($booking->tanggal)->format('d M Y') }}</td>
@@ -317,36 +335,34 @@
                                 </td>
                                 <td>{{ $booking->keterangan ?: '-' }}</td>
                                 <td>
-                                    <form action="{{ route('bookings.update', $booking->id) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <select name="status" onchange="this.form.submit()" class="form-select form-select-sm 
-                                            {{ $booking->status == 'pending' ? 'status-pending' : '' }}
-                                            {{ $booking->status == 'disetujui' ? 'status-disetujui' : '' }}
-                                            {{ $booking->status == 'ditolak' ? 'status-ditolak' : '' }}">
-                                            <option value="pending" {{ $booking->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                            <option value="disetujui" {{ $booking->status == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                            <option value="ditolak" {{ $booking->status == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                        </select>
-                                    </form>
+                                    <span class="
+                                        {{ $booking->status == 'pending' ? 'status-pending' : '' }}
+                                        {{ $booking->status == 'disetujui' ? 'status-disetujui' : '' }}
+                                        {{ $booking->status == 'ditolak' ? 'status-ditolak' : '' }}"
+                                    >
+                                        <i class="fas 
+                                            {{ $booking->status == 'pending' ? 'fa-clock' : '' }}
+                                            {{ $booking->status == 'disetujui' ? 'fa-check' : '' }}
+                                            {{ $booking->status == 'ditolak' ? 'fa-times' : '' }} 
+                                            me-1"
+                                        ></i>
+                                        {{ ucfirst($booking->status) }}
+                                    </span>
                                 </td>
-                                <td>
-                                    <form action="{{ route('bookings.destroy', $booking->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-danger btn-action" onclick="return confirm('Yakin hapus booking ini?')">
-                                            <i class="fas fa-trash-alt me-1"></i> Hapus
-                                        </button>
-                                    </form>
+                                <td>{{ $booking->updated_at->format('d/m/Y H:i') }}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-info btn-sm btn-action" data-bs-toggle="modal" data-bs-target="#detailModal{{ $booking->id }}">
+                                        <i class="fas fa-eye me-1"></i> Lihat
+                                    </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9">
+                                <td colspan="8">
                                     <div class="empty-state">
                                         <i class="fas fa-calendar-times"></i>
                                         <h4>Belum ada booking</h4>
-                                        <p>Silakan pilih ruangan yang tersedia untuk melakukan booking</p>
+                                        <p>Silakan booking ruangan terlebih dahulu</p>
                                     </div>
                                 </td>
                             </tr>
@@ -372,19 +388,21 @@
                     <div class="col-md-6 mb-4">
                         <div class="room-card">
                             <div class="room-card-header">
-                                <h5 class="mb-0">{{ $room->nama }}</h5>
+                                <h5 class="mb-0">{{ $room->nama_ruangan }}</h5>
                             </div>
                             <div class="room-card-body">
                                 <div class="room-capacity">
                                     <i class="fas fa-users"></i>
                                     <span>Kapasitas: {{ $room->kapasitas }} orang</span>
                                 </div>
+                                @if($room->fasilitas)
                                 <div class="room-description">
-                                    {{ $room->deskripsi ?: 'Tidak ada deskripsi tambahan' }}
+                                    <strong>Fasilitas:</strong> {{ $room->fasilitas }}
                                 </div>
+                                @endif
                                 <button class="btn btn-primary w-100 btn-book-room" 
                                         data-room-id="{{ $room->id }}"
-                                        data-room-name="{{ $room->nama }}">
+                                        data-room-name="{{ $room->nama_ruangan }}">
                                     <i class="fas fa-calendar-plus me-2"></i> Booking Ruangan Ini
                                 </button>
                             </div>
@@ -395,7 +413,7 @@
                             <div class="empty-state">
                                 <i class="fas fa-door-closed"></i>
                                 <h4>Belum ada ruangan tersedia</h4>
-                                <p>Silakan tambah ruangan terlebih dahulu</p>
+                                <p>Silakan hubungi administrator</p>
                             </div>
                         </div>
                     @endforelse
@@ -456,18 +474,126 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Keterangan (Opsional)</label>
-                    <textarea name="keterangan" class="form-control" rows="3"></textarea>
+                    <textarea name="keterangan" class="form-control" rows="3" placeholder="Tujuan penggunaan ruangan..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i> Simpan Booking
+                    <i class="fas fa-save me-1"></i> Ajukan Booking
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Modal Detail Booking -->
+@foreach($bookings as $booking)
+<div class="modal fade" id="detailModal{{ $booking->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>Detail Booking
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-user me-2"></i>Informasi Pemesan
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="120">Nama:</th>
+                                        <td>{{ $booking->nama_pemesan }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Email:</th>
+                                        <td>{{ $booking->email }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-calendar me-2"></i>Informasi Booking
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="120">Ruangan:</th>
+                                        <td>{{ $booking->room->nama_ruangan ?? 'N/A' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tanggal:</th>
+                                        <td>{{ \Carbon\Carbon::parse($booking->tanggal)->format('d F Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Waktu:</th>
+                                        <td>{{ $booking->jam_mulai }} - {{ $booking->jam_selesai }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Status:</th>
+                                        <td>
+                                            <span class="
+                                                {{ $booking->status == 'pending' ? 'status-pending' : '' }}
+                                                {{ $booking->status == 'disetujui' ? 'status-disetujui' : '' }}
+                                                {{ $booking->status == 'ditolak' ? 'status-ditolak' : '' }}"
+                                            >
+                                                {{ ucfirst($booking->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                @if($booking->keterangan)
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-sticky-note me-2"></i>Keterangan
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ $booking->keterangan }}</p>
+                    </div>
+                </div>
+                @endif
+
+                <div class="card mt-3">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="fas fa-clock me-2"></i>Informasi Waktu
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="120">Diajukan pada:</th>
+                                <td>{{ $booking->created_at->format('d/m/Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Diupdate pada:</th>
+                                <td>{{ $booking->updated_at->format('d/m/Y H:i') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <script>

@@ -226,6 +226,11 @@
             <div class="col-md-6">
                 <h1 class="page-title"><i class="fas fa-door-open"></i> Manajemen Ruangan</h1>
             </div>
+            <form action="{{ route('logout') }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-danger">Logout</button>
+</form>
+
             <div class="col-md-6 text-md-end header-actions">
                 <!-- Tombol Tambah -->
                 <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#tambahModal">

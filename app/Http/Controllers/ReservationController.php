@@ -19,7 +19,6 @@ class ReservationController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        // Update path view ke petugas/reservations
         return view('petugas.reservations', [
             'pendingReservations' => $pendingReservations,
             'historyReservations' => $historyReservations,
@@ -33,13 +32,14 @@ class ReservationController extends Controller
         $reservation = Reservation::findOrFail($id);
         
         if (!$reservation->isPending()) {
-            return redirect()->route('reservations.index')
+            return redirect()->route('petugas.reservations.index')
                 ->with('error', 'Hanya booking dengan status pending yang dapat disetujui.');
         }
 
         $reservation->approve();
 
-        return redirect()->route('reservations.index')
+        // 🔑 Redirect dengan hash #history agar tab Riwayat langsung aktif
+        return redirect()->to(route('petugas.reservations.index', [], false) . '#history')
             ->with('success', 'Booking berhasil disetujui.');
     }
 
@@ -48,13 +48,13 @@ class ReservationController extends Controller
         $reservation = Reservation::findOrFail($id);
         
         if (!$reservation->isPending()) {
-            return redirect()->route('reservations.index')
+            return redirect()->route('petugas.reservations.index')
                 ->with('error', 'Hanya booking dengan status pending yang dapat ditolak.');
         }
 
         $reservation->reject();
 
-        return redirect()->route('reservations.index')
+        return redirect()->to(route('petugas.reservations.index', [], false) . '#history')
             ->with('success', 'Booking berhasil ditolak.');
     }
 }
