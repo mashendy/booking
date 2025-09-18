@@ -43,8 +43,8 @@ Route::resource('rooms', RoomController::class)->middleware('auth');
 // Bookings (CRUD) - hanya user biasa
 Route::resource('bookings', BookingController::class)->middleware('auth');
 
-// FITUR PETUGAS
-Route::prefix('petugas')->name('petugas.')->middleware(['auth', 'petugas'])->group(function () {
+// FITUR PETUGAS (tanpa middleware 'petugas')
+Route::prefix('petugas')->name('petugas.')->middleware(['auth'])->group(function () {
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::post('/reservations/{id}/approve', [ReservationController::class, 'approve'])->name('reservations.approve');
     Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject'])->name('reservations.reject');

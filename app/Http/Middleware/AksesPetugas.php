@@ -15,6 +15,6 @@ class AksesPetugas
             return $next($request);
         }
 
-        return abort(403, 'Unauthorized.');
+        return redirect('/')->with('error', 'Akses ditolak. Hanya petugas yang dapat mengakses halaman ini.');
     }
 }

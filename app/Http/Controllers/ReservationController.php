@@ -2,59 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Reservation;
 use Illuminate\Http\Request;
+use App\Models\Booking;
+use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
+    // Hanya petugas
+    private function authorizePetugas()
+    {
+        if (!Auth::check() || Auth::user()->role !== 'petugas') {
+            abort(403, 'Akses ditolak.');
+        }
+    }
+
+    // Tampilkan semua booking untuk petugas
     public function index()
     {
-        $pendingReservations = Reservation::with('room')
-            ->pending()
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $historyReservations = Reservation::with('room')
-            ->whereIn('status', ['disetujui', 'ditolak'])
-            ->orderBy('updated_at', 'desc')
-            ->get();
-
-        return view('petugas.reservations', [
-            'pendingReservations' => $pendingReservations,
-            'historyReservations' => $historyReservations,
-            'pendingCount' => $pendingReservations->count(),
-            'historyCount' => $historyReservations->count()
-        ]);
+        $this->authorizePetugas();
+        $reservations = Booking::with('room')->get(); // ambil semua booking
+        return view('petugas.reservations', compact('reservations'));
     }
 
+    // Setujui booking
     public function approve($id)
     {
-        $reservation = Reservation::findOrFail($id);
-        
-        if (!$reservation->isPending()) {
-            return redirect()->route('petugas.reservations.index')
-                ->with('error', 'Hanya booking dengan status pending yang dapat disetujui.');
-        }
+        $this->authorizePetugas();
 
-        $reservation->approve();
+        $booking = Booking::findOrFail($id);
+        $booking->status = 'disetujui';
+        $booking->save();
 
-        // 🔑 Redirect dengan hash #history agar tab Riwayat langsung aktif
-        return redirect()->to(route('petugas.reservations.index', [], false) . '#history')
-            ->with('success', 'Booking berhasil disetujui.');
+        return redirect()->route('petugas.reservations.index')->with('success', 'Booking disetujui.');
     }
 
+    // Tolak booking
     public function reject($id)
     {
-        $reservation = Reservation::findOrFail($id);
-        
-        if (!$reservation->isPending()) {
-            return redirect()->route('petugas.reservations.index')
-                ->with('error', 'Hanya booking dengan status pending yang dapat ditolak.');
-        }
+        $this->authorizePetugas();
 
-        $reservation->reject();
+        $booking = Booking::findOrFail($id);
+        $booking->status = 'ditolak';
+        $booking->save();
 
-        return redirect()->to(route('petugas.reservations.index', [], false) . '#history')
-            ->with('success', 'Booking berhasil ditolak.');
+        return redirect()->route('petugas.reservations.index')->with('success', 'Booking ditolak.');
     }
 }
